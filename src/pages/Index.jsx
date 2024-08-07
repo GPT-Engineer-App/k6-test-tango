@@ -3,15 +3,27 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Cat, Heart, Info, Paw, Star } from "lucide-react";
+import { Cat, Heart, Info, Paw, Star, Camera, Sparkles } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Badge } from "@/components/ui/badge";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const Index = () => {
   const [likes, setLikes] = useState(0);
   const [catFacts, setCatFacts] = useState([]);
   const [currentFactIndex, setCurrentFactIndex] = useState(0);
   const [showAlert, setShowAlert] = useState(false);
+  const [catImages, setCatImages] = useState([]);
+
+  const catBreeds = [
+    { name: "Siamese", popularity: 85 },
+    { name: "Persian", popularity: 78 },
+    { name: "Maine Coon", popularity: 92 },
+    { name: "Bengal", popularity: 88 },
+    { name: "Scottish Fold", popularity: 76 },
+  ];
 
   useEffect(() => {
     const facts = [
@@ -22,6 +34,13 @@ const Index = () => {
       "Cats can jump up to six times their length.",
     ];
     setCatFacts(facts);
+
+    const images = [
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/1200px-Cat03.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/4/4d/Cat_November_2010-1a.jpg",
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Orange_tabby_cat_sitting_on_fallen_leaves-Hisashi-01A.jpg/1280px-Orange_tabby_cat_sitting_on_fallen_leaves-Hisashi-01A.jpg",
+    ];
+    setCatImages(images);
   }, []);
 
   useEffect(() => {
@@ -59,25 +78,35 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto py-12 px-4">
-        <motion.div
-          className="relative mb-12"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <img 
-            src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/1200px-Cat03.jpg" 
-            alt="Cute cat" 
-            className="mx-auto object-cover w-full h-[500px] rounded-lg shadow-lg"
-          />
-          <motion.div
-            className="absolute top-4 right-4 bg-white rounded-full p-2 shadow-lg"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <Star className="h-8 w-8 text-yellow-400" />
-          </motion.div>
-        </motion.div>
+        <Carousel className="mb-12">
+          <CarouselContent>
+            {catImages.map((image, index) => (
+              <CarouselItem key={index}>
+                <motion.div
+                  className="relative"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <img 
+                    src={image} 
+                    alt={`Cute cat ${index + 1}`} 
+                    className="mx-auto object-cover w-full h-[500px] rounded-lg shadow-lg"
+                  />
+                  <motion.div
+                    className="absolute top-4 right-4 bg-white rounded-full p-2 shadow-lg"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <Star className="h-8 w-8 text-yellow-400" />
+                  </motion.div>
+                </motion.div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
 
         <div className="flex flex-col items-center mb-12">
           <Button 
@@ -100,7 +129,7 @@ const Index = () => {
               exit={{ opacity: 0, y: 50 }}
             >
               <Alert className="mb-6">
-                <Paw className="h-4 w-4" />
+                <Sparkles className="h-4 w-4" />
                 <AlertTitle>Meow-nificent!</AlertTitle>
                 <AlertDescription>
                   You've reached {likes} likes! The cats are purring with joy!
@@ -118,11 +147,17 @@ const Index = () => {
         >
           <Card>
             <CardHeader>
-              <CardTitle>Cat Fact of the Day</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Info className="h-6 w-6" />
+                Cat Fact of the Day
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-lg mb-4">{catFacts[currentFactIndex]}</p>
-              <Button onClick={nextFact}>Next Fact</Button>
+              <Button onClick={nextFact} className="flex items-center gap-2">
+                <Camera className="h-4 w-4" />
+                Next Fact
+              </Button>
             </CardContent>
           </Card>
         </motion.div>
@@ -175,17 +210,28 @@ const Index = () => {
                 <CardDescription>Some well-known cat breeds around the world</CardDescription>
               </CardHeader>
               <CardContent>
-                <ul className="grid grid-cols-2 gap-4">
-                  {["Siamese", "Persian", "Maine Coon", "Bengal", "Scottish Fold"].map((breed, index) => (
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={catBreeds}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="popularity" stroke="#8884d8" activeDot={{ r: 8 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+                <ul className="grid grid-cols-2 gap-4 mt-6">
+                  {catBreeds.map((breed, index) => (
                     <motion.li 
-                      key={breed} 
+                      key={breed.name} 
                       className="flex items-center gap-2"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
                     >
-                      <span className="h-2 w-2 bg-purple-500 rounded-full"></span>
-                      {breed}
+                      <Badge variant="outline" className="bg-purple-100">
+                        {breed.name}
+                      </Badge>
                     </motion.li>
                   ))}
                 </ul>
